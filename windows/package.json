@@ -1,0 +1,26 @@
+{
+  "name": "blaze-30-controller-windows",
+  "version": "0.3.0",
+  "private": true,
+  "description": "Blaze 30 Controller for Windows",
+  "main": "dist-electron/electron/main.js",
+  "scripts": {
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit",
+    "dev": "vite build && tsc -p electron/tsconfig.json && electron .",
+    "build": "vite build && tsc -p electron/tsconfig.json",
+    "test:ui": "npm run build && playwright test",
+    "dist": "npm run build && electron-builder --win portable"
+  },
+  "devDependencies": {
+    "@playwright/test": "1.65.1",
+    "@types/node": "22.20.5",
+    "electron": "45.3.2",
+    "electron-builder": "26.18.0",
+    "typescript": "5.9.3",
+    "vite": "8.3.8",
+    "vitest": "5.1.0"
+  },
+  "author": "Burak Boz",
+  "license": "MIT"
+}

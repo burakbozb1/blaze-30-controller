@@ -1,0 +1,193 @@
+<style>
+  .row { display:flex; gap:22px; flex-wrap:wrap; justify-content:center; align-items:flex-start; }
+  .cap { text-align:center; font-size:13px; color:#aaa; margin-top:8px; max-width:360px; }
+  .phone { position:relative; width:360px; height:700px; background:#08080a; border:2px solid #2a2a30; border-radius:28px; overflow:hidden; color:#f2f2f2; font-family: system-ui, sans-serif; box-shadow: 0 8px 28px rgba(0,0,0,.5); }
+  .top { padding:12px 12px 0; }
+  .hdr { display:flex; align-items:center; justify-content:space-between; margin-bottom:8px; }
+  .ttl { font-weight:800; font-size:15px; letter-spacing:.8px; }
+  .led { display:flex; align-items:center; gap:7px; font-size:10px; letter-spacing:1.2px; color:#d8d8dc; margin-top:5px; }
+  .led i { width:11px; height:11px; border-radius:50%; background:radial-gradient(circle at 35% 30%, #b6ffc7, #25d85a 55%, #0c6b27); box-shadow:0 0 8px 2px rgba(37,216,90,.75); display:inline-block; }
+
+  /* tab bar like the reference */
+  .tabs { display:flex; border-bottom:1px solid #26262c; margin:0 -12px 10px; padding:0 8px; }
+  .tab { flex:1; text-align:center; padding:11px 0 10px; font-size:12px; font-weight:800; letter-spacing:1.2px; color:#8a8a93; position:relative; }
+  .tab.on { color:#ff3b4a; text-shadow:0 0 8px rgba(255,45,61,.6); }
+  .tab.on:after { content:""; position:absolute; left:14%; right:14%; bottom:-1px; height:3px; border-radius:2px; background:#ff2d3d; box-shadow:0 0 8px #ff2d3d; }
+
+  .content { position:absolute; left:0; right:0; top:128px; bottom:128px; padding:0 12px; overflow:hidden; }
+
+  /* KNOB: arc and cap are concentric inside one square; the arc is 100% of the box, the cap 68%.
+     --v is the value in degrees of the 270-degree sweep (0..270); the same variable drives arc and pointer. */
+  .k { --s:58px; --v:135; position:relative; width:var(--s); height:var(--s); flex:none; }
+  .k .arc { position:absolute; inset:0; border-radius:50%;
+            background: conic-gradient(from 225deg, #ff2d3d 0deg, #ff6a3d calc(var(--v) * 1deg), #2b1316 calc(var(--v) * 1deg), #2b1316 270deg, transparent 270deg);
+            -webkit-mask: radial-gradient(closest-side, transparent 77%, #000 79%); mask: radial-gradient(closest-side, transparent 77%, #000 79%); }
+  .k .glow { position:absolute; inset:0; border-radius:50%; filter: blur(3px); opacity:.75;
+            background: conic-gradient(from 225deg, #ff2d3d 0deg, #ff2d3d calc(var(--v) * 1deg), transparent calc(var(--v) * 1deg));
+            -webkit-mask: radial-gradient(closest-side, transparent 77%, #000 79%, #000 100%, transparent 100%); mask: radial-gradient(closest-side, transparent 77%, #000 79%, #000 100%, transparent 100%); }
+  .k .body { position:absolute; inset:16%; border-radius:50%; background: radial-gradient(circle at 38% 30%, #3b3b43, #101014 72%); box-shadow: 0 3px 6px #000, inset 0 1px 1px #4a4a52; }
+  .k .tick { position:absolute; left:50%; top:50%; width:3px; height:30%; background:#ff3b4a; border-radius:2px; box-shadow:0 0 5px #ff3b4a; transform-origin:50% 0; transform: translateX(-50%) rotate(calc((var(--v) - 135) * 1deg + 180deg)); }
+  .kl { font-size:9px; letter-spacing:1px; text-align:center; margin-top:4px; color:#b9b9c0; }
+  .kv { font-size:10px; text-align:center; color:#ff5a67; font-weight:700; }
+  .big { --s:84px; } .mid { --s:62px; } .sm { --s:46px; }
+
+  .panel { background:linear-gradient(#17171b,#101013); border:1px solid #25252b; border-radius:14px; padding:9px 10px 8px; margin-bottom:9px; }
+  .ph { display:flex; align-items:center; justify-content:space-between; margin-bottom:7px; }
+  .ph b { font-size:10px; letter-spacing:1.4px; color:#a4a4ad; }
+  .pwr { width:30px; height:30px; border-radius:50%; background:radial-gradient(circle at 35% 30%, #4a4a52,#1a1a1e); border:2px solid #3a3a42; display:flex; align-items:center; justify-content:center; font-size:14px; color:#777; }
+  .pwr.on { border-color:#ff2d3d; color:#ff4655; box-shadow:0 0 10px rgba(255,45,61,.7); }
+  .knobs { display:flex; justify-content:space-around; align-items:flex-start; }
+  .knobs > div { display:flex; flex-direction:column; align-items:center; }
+  .chips { display:flex; flex-wrap:wrap; gap:5px; }
+  .chip { flex:1 0 28%; text-align:center; padding:7px 0; font-size:9.5px; font-weight:800; letter-spacing:.6px; border:1px solid #34343c; border-radius:8px; color:#bbb; background:#17171b; }
+  .chip.on { border-color:#ff2d3d; color:#ff5a67; box-shadow:0 0 8px rgba(255,45,61,.45); }
+
+  .eq { display:flex; justify-content:space-between; padding:6px 4px 0; }
+  .fd { width:34px; text-align:center; }
+  .track { margin:0 auto; width:7px; height:250px; background:#2a1316; border-radius:4px; position:relative; }
+  .fill { position:absolute; bottom:0; left:0; right:0; background:linear-gradient(#ff2d3d,#a8101c); border-radius:4px; box-shadow:0 0 7px rgba(255,45,61,.6); }
+  .thumb { position:absolute; left:50%; width:28px; height:15px; transform:translate(-50%,50%); background:linear-gradient(#d4d4da,#6a6a72); border-radius:4px; box-shadow:0 2px 3px #000; }
+
+  .dock { position:absolute; left:0; right:0; bottom:0; height:128px; background:linear-gradient(#1b1b20,#0c0c0e); border-top:1px solid #2e2e35; box-shadow:0 -6px 18px rgba(0,0,0,.6); display:grid; grid-template-columns:repeat(5,1fr); padding:12px 6px 0; }
+  .ps { text-align:center; }
+  .ps .lb { font-size:9.5px; font-weight:700; letter-spacing:.3px; color:#e6e6ea; margin-bottom:7px; white-space:nowrap; }
+  .ps.on .lb { color:#ff3b4a; text-shadow:0 0 8px rgba(255,45,61,.9); }
+  .hexw { position:relative; width:52px; height:58px; margin:0 auto; filter: drop-shadow(0 3px 3px #000); }
+  .hex { position:absolute; inset:0; background:linear-gradient(145deg,#8a8a92,#2b2b31 55%,#4c4c54); clip-path:polygon(25% 3%,75% 3%,100% 50%,75% 97%,25% 97%,0 50%); }
+  .hex:after { content:""; position:absolute; inset:3px; background:linear-gradient(145deg,#3a3a41,#17171b); clip-path:polygon(25% 3%,75% 3%,100% 50%,75% 97%,25% 97%,0 50%); }
+  .btn { position:absolute; left:50%; top:50%; width:30px; height:30px; margin:-15px 0 0 -15px; border-radius:50%; background:radial-gradient(circle at 36% 30%, #e9e9ee, #9b9ba3 45%, #4a4a52 100%); box-shadow:0 2px 3px #000, inset 0 -2px 3px rgba(0,0,0,.4); }
+  .ps.on .ring { position:absolute; left:50%; top:50%; width:42px; height:42px; margin:-21px 0 0 -21px; border-radius:50%; border:3px solid #ff2d3d; box-shadow:0 0 12px 2px rgba(255,45,61,.85), inset 0 0 8px rgba(255,45,61,.6); }
+
+  /* tuner tab */
+  .tn { text-align:center; padding-top:18px; }
+  .tn .note { font-size:92px; font-weight:800; color:#2fd45a; text-shadow:0 0 18px rgba(47,212,90,.55); line-height:1; }
+  .tn .bar { position:relative; height:46px; margin:18px 8px 6px; }
+  .tn .bar:before { content:""; position:absolute; left:0; right:0; top:22px; height:3px; background:#3a3a42; }
+  .tn .bar .mk { position:absolute; left:50%; top:10px; width:3px; height:27px; background:#777; margin-left:-1px; }
+  .tn .bar .nd { position:absolute; left:52%; top:6px; width:8px; height:35px; background:#2fd45a; border-radius:3px; box-shadow:0 0 12px #2fd45a; }
+  .tn .c { font-size:22px; font-weight:700; }
+  .tn .ok { font-size:15px; font-weight:800; letter-spacing:1px; color:#2fd45a; margin:6px 0; }
+  .tn .m { font-size:13px; color:#c4c4cb; margin-top:4px; }
+  .tn .hint { font-size:11px; color:#85858d; margin:26px 18px 0; line-height:1.45; }
+</style>
+
+<h2>Sekmeli düzen: AMP | EQ | AKORT</h2>
+<p class="subtitle">Pot yayları artık potun etrafını tam sarıyor (yay ile pot aynı kutuda, eş merkezli, aynı değişkenle çalışıyor). Gain çift-dokunuş penceresi onaylandığı gibi kalıyor.</p>
+
+<div class="row">
+
+  <div>
+    <div class="phone">
+      <div class="top">
+        <div class="hdr">
+          <div><div class="ttl">KOZMOS BLAZE 30</div><div class="led"><i></i>BAĞLI</div></div>
+          <div style="display:flex;flex-direction:column;align-items:center"><div class="k mid" style="--v:170"><div class="glow"></div><div class="arc"></div><div class="body"></div><div class="tick"></div></div><div class="kl">ANA SES</div></div>
+        </div>
+        <div class="tabs"><div class="tab on">AMP</div><div class="tab">EQ</div><div class="tab">AKORT</div></div>
+      </div>
+      <div class="content">
+        <div class="panel">
+          <div class="knobs" style="align-items:center">
+            <div><div class="k big" style="--v:135"><div class="glow"></div><div class="arc"></div><div class="body"></div><div class="tick"></div></div><div class="kl">GAIN</div></div>
+            <div style="flex:1;padding-left:14px;align-items:stretch">
+              <div class="kl" style="text-align:left;margin:0 0 5px">EFEKT</div>
+              <div class="chips"><div class="chip on">OFF</div><div class="chip">FLANGER</div><div class="chip">CHORUS</div><div class="chip">PHASER</div><div class="chip">WAH</div><div class="chip">VIBRATO</div></div>
+            </div>
+          </div>
+        </div>
+        <div class="panel">
+          <div class="ph"><b>DELAY</b><div class="pwr on">⏻</div></div>
+          <div class="knobs">
+            <div><div class="k sm" style="--v:100"><div class="glow"></div><div class="arc"></div><div class="body"></div><div class="tick"></div></div><div class="kl">ANA</div></div>
+            <div><div class="k sm" style="--v:150"><div class="glow"></div><div class="arc"></div><div class="body"></div><div class="tick"></div></div><div class="kl">SEVİYE</div></div>
+            <div><div class="k sm" style="--v:80"><div class="glow"></div><div class="arc"></div><div class="body"></div><div class="tick"></div></div><div class="kl">FEEDBACK</div></div>
+            <div><div class="k sm" style="--v:200"><div class="glow"></div><div class="arc"></div><div class="body"></div><div class="tick"></div></div><div class="kl">SÜRE</div></div>
+          </div>
+        </div>
+        <div class="panel">
+          <div class="ph"><b>REVERB</b><div class="pwr on">⏻</div></div>
+          <div class="chips" style="margin-bottom:8px"><div class="chip on">PLATE</div><div class="chip">ROOM</div><div class="chip">SPRING</div></div>
+          <div class="knobs">
+            <div><div class="k sm" style="--v:90"><div class="glow"></div><div class="arc"></div><div class="body"></div><div class="tick"></div></div><div class="kl">ANA</div></div>
+            <div><div class="k sm" style="--v:130"><div class="glow"></div><div class="arc"></div><div class="body"></div><div class="tick"></div></div><div class="kl">SEVİYE</div></div>
+            <div><div class="k sm" style="--v:110"><div class="glow"></div><div class="arc"></div><div class="body"></div><div class="tick"></div></div><div class="kl">TON</div></div>
+            <div><div class="k sm" style="--v:170"><div class="glow"></div><div class="arc"></div><div class="body"></div><div class="tick"></div></div><div class="kl">SÜRE</div></div>
+          </div>
+        </div>
+      </div>
+      <div class="dock">
+        <div class="ps"><div class="lb">CLEAN</div><div class="hexw"><div class="hex"></div><div class="btn"></div></div></div>
+        <div class="ps"><div class="lb">ACOUSTIC</div><div class="hexw"><div class="hex"></div><div class="btn"></div></div></div>
+        <div class="ps"><div class="lb">DRIVE</div><div class="hexw"><div class="hex"></div><div class="btn"></div></div></div>
+        <div class="ps on"><div class="lb">DISTORTION</div><div class="hexw"><div class="hex"></div><div class="btn"></div><div class="ring"></div></div></div>
+        <div class="ps"><div class="lb">METAL</div><div class="hexw"><div class="hex"></div><div class="btn"></div></div></div>
+      </div>
+    </div>
+    <div class="cap"><b>AMP sekmesi.</b> Gain, efekt, delay ve reverb aynı ekranda, kaydırmadan. Delay ve Reverb'in kendi aç/kapa tuşu var.</div>
+  </div>
+
+  <div>
+    <div class="phone">
+      <div class="top">
+        <div class="hdr">
+          <div><div class="ttl">KOZMOS BLAZE 30</div><div class="led"><i></i>BAĞLI</div></div>
+          <div style="display:flex;flex-direction:column;align-items:center"><div class="k mid" style="--v:170"><div class="glow"></div><div class="arc"></div><div class="body"></div><div class="tick"></div></div><div class="kl">ANA SES</div></div>
+        </div>
+        <div class="tabs"><div class="tab">AMP</div><div class="tab on">EQ</div><div class="tab">AKORT</div></div>
+      </div>
+      <div class="content">
+        <div class="panel" style="padding:12px 8px 10px">
+          <div class="eq">
+            <div class="fd"><div class="kv">10</div><div class="track"><div class="fill" style="height:50%"></div><div class="thumb" style="bottom:50%"></div></div><div class="kl">100</div></div>
+            <div class="fd"><div class="kv">12</div><div class="track"><div class="fill" style="height:60%"></div><div class="thumb" style="bottom:60%"></div></div><div class="kl">200</div></div>
+            <div class="fd"><div class="kv">9</div><div class="track"><div class="fill" style="height:45%"></div><div class="thumb" style="bottom:45%"></div></div><div class="kl">400</div></div>
+            <div class="fd"><div class="kv">10</div><div class="track"><div class="fill" style="height:50%"></div><div class="thumb" style="bottom:50%"></div></div><div class="kl">800</div></div>
+            <div class="fd"><div class="kv">14</div><div class="track"><div class="fill" style="height:70%"></div><div class="thumb" style="bottom:70%"></div></div><div class="kl">1.6k</div></div>
+            <div class="fd"><div class="kv">11</div><div class="track"><div class="fill" style="height:55%"></div><div class="thumb" style="bottom:55%"></div></div><div class="kl">3.2k</div></div>
+            <div class="fd"><div class="kv">7</div><div class="track"><div class="fill" style="height:35%"></div><div class="thumb" style="bottom:35%"></div></div><div class="kl">6.4k</div></div>
+          </div>
+        </div>
+      </div>
+      <div class="dock">
+        <div class="ps"><div class="lb">CLEAN</div><div class="hexw"><div class="hex"></div><div class="btn"></div></div></div>
+        <div class="ps"><div class="lb">ACOUSTIC</div><div class="hexw"><div class="hex"></div><div class="btn"></div></div></div>
+        <div class="ps"><div class="lb">DRIVE</div><div class="hexw"><div class="hex"></div><div class="btn"></div></div></div>
+        <div class="ps on"><div class="lb">DISTORTION</div><div class="hexw"><div class="hex"></div><div class="btn"></div><div class="ring"></div></div></div>
+        <div class="ps"><div class="lb">METAL</div><div class="hexw"><div class="hex"></div><div class="btn"></div></div></div>
+      </div>
+    </div>
+    <div class="cap"><b>EQ sekmesi.</b> 7 dikey fader, büyük ve parmakla tutulabilir. Ton değiştirirken EQ'yu da izleyebilirsin.</div>
+  </div>
+
+  <div>
+    <div class="phone">
+      <div class="top">
+        <div class="hdr">
+          <div><div class="ttl">KOZMOS BLAZE 30</div><div class="led"><i></i>BAĞLI</div></div>
+          <div style="display:flex;flex-direction:column;align-items:center"><div class="k mid" style="--v:170"><div class="glow"></div><div class="arc"></div><div class="body"></div><div class="tick"></div></div><div class="kl">ANA SES</div></div>
+        </div>
+        <div class="tabs"><div class="tab">AMP</div><div class="tab">EQ</div><div class="tab on">AKORT</div></div>
+      </div>
+      <div class="content">
+        <div class="tn">
+          <div class="note">E2</div>
+          <div class="bar"><div class="mk"></div><div class="nd"></div></div>
+          <div class="c">+3 cent</div>
+          <div class="ok">AKORTLU</div>
+          <div class="m">82.4 Hz</div>
+          <div class="m">6. tel</div>
+          <div class="hint">En iyi sonuç için amfiyi Clean tonda, düşük sesle kullan ve telefonu amfiye yakın tut.</div>
+        </div>
+      </div>
+      <div class="dock">
+        <div class="ps"><div class="lb">CLEAN</div><div class="hexw"><div class="hex"></div><div class="btn"></div></div></div>
+        <div class="ps"><div class="lb">ACOUSTIC</div><div class="hexw"><div class="hex"></div><div class="btn"></div></div></div>
+        <div class="ps"><div class="lb">DRIVE</div><div class="hexw"><div class="hex"></div><div class="btn"></div></div></div>
+        <div class="ps on"><div class="lb">DISTORTION</div><div class="hexw"><div class="hex"></div><div class="btn"></div><div class="ring"></div></div></div>
+        <div class="ps"><div class="lb">METAL</div><div class="hexw"><div class="hex"></div><div class="btn"></div></div></div>
+      </div>
+    </div>
+    <div class="cap"><b>AKORT sekmesi.</b> Mevcut akort ekranı, aynı sabit boyutlu panel ve aktif/pasif davranışıyla. Pedaller burada da duruyor, böylece akort ederken Clean'e geçebilirsin.</div>
+  </div>
+
+</div>

@@ -1,0 +1,16 @@
+appId: dev.blaze.controller.windows
+productName: Blaze 30 Controller
+directories:
+  output: release
+files:
+  - dist/**
+  - dist-electron/**
+  - build/icon.ico
+  - package.json
+asar: true
+win:
+  target: portable
+  icon: build/icon.ico
+  signExecutable: false
+portable:
+  artifactName: Blaze-30-Controller-Windows.exe

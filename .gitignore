@@ -1,0 +1,24 @@
+analysis/
+tools/
+build/
+.gradle/
+local.properties
+.superpowers/
+Kaynak/
+.kotlin/
+__pycache__/
+*.pyc
+tmp/
+keystore.properties
+*.jks
+*.keystore
+release.properties
+
+# Windows app
+windows/node_modules/
+windows/dist/
+windows/dist-electron/
+windows/release/
+windows/screens/
+windows/test-results/
+!windows/build/

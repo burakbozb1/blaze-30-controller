@@ -1,0 +1,100 @@
+<style>
+  .row { display:flex; gap:26px; flex-wrap:wrap; justify-content:center; align-items:flex-start; }
+  .cap { text-align:center; font-size:13px; color:#aaa; margin-top:8px; max-width:420px; }
+  .brushed {
+    background:
+      url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='360' height='360'><filter id='n' x='0' y='0' width='100%' height='100%'><feTurbulence type='fractalNoise' baseFrequency='0.012 0.9' numOctaves='3' seed='7'/><feColorMatrix values='0 0 0 0 1  0 0 0 0 1  0 0 0 0 1  0 0 0 .9 -.34'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>"),
+      linear-gradient(180deg, #1a1a1d 0%, #0d0d0f 45%, #151518 100%);
+    background-blend-mode: soft-light, normal;
+  }
+  .stage { width:360px; padding:14px 12px; border:2px solid #2a2a30; border-radius:20px; color:#f2f2f2; font-family: system-ui, sans-serif; zoom:1.25; box-shadow:0 8px 28px rgba(0,0,0,.5); }
+  .panel { background:linear-gradient(rgba(30,30,34,.78),rgba(14,14,17,.82)); border:1px solid #2a2a30; border-radius:14px; padding:9px 10px 8px; margin-bottom:9px; box-shadow: inset 0 1px 0 rgba(255,255,255,.05); }
+  .ph { display:flex; align-items:center; justify-content:space-between; margin-bottom:7px; }
+  .ph b { font-size:10px; letter-spacing:1.4px; color:#a4a4ad; }
+  .body-wrap { transition:opacity .2s; }
+  .off .body-wrap { opacity:.38; filter:saturate(.3); }
+  .k { --s:46px; --v:135; position:relative; width:var(--s); height:var(--s); flex:none; }
+  .k .arc { position:absolute; inset:0; border-radius:50%; background: conic-gradient(from 225deg, #ff2d3d 0deg, #ff6a3d calc(var(--v) * 1deg), #2b1316 calc(var(--v) * 1deg), #2b1316 270deg, transparent 270deg); -webkit-mask: radial-gradient(closest-side, transparent 77%, #000 79%); mask: radial-gradient(closest-side, transparent 77%, #000 79%); }
+  .k .glow { position:absolute; inset:0; border-radius:50%; filter: blur(3px); opacity:.75; background: conic-gradient(from 225deg, #ff2d3d 0deg, #ff2d3d calc(var(--v) * 1deg), transparent calc(var(--v) * 1deg)); -webkit-mask: radial-gradient(closest-side, transparent 77%, #000 79%, #000 100%, transparent 100%); mask: radial-gradient(closest-side, transparent 77%, #000 79%, #000 100%, transparent 100%); }
+  .k .body { position:absolute; inset:16%; border-radius:50%; background: radial-gradient(circle at 38% 30%, #3b3b43, #101014 72%); box-shadow: 0 3px 6px #000, inset 0 1px 1px #4a4a52; }
+  .k .tick { position:absolute; left:50%; top:50%; width:3px; height:30%; background:#ff3b4a; border-radius:2px; box-shadow:0 0 5px #ff3b4a; transform-origin:50% 0; transform: translateX(-50%) rotate(calc((var(--v) - 135) * 1deg + 180deg)); }
+  .kl { font-size:9px; letter-spacing:1px; text-align:center; margin-top:4px; color:#b9b9c0; }
+  .knobs { display:flex; justify-content:space-around; align-items:flex-start; }
+  .knobs > div { display:flex; flex-direction:column; align-items:center; }
+  .chips { display:flex; flex-wrap:wrap; gap:5px; margin-bottom:8px; }
+  .chip { flex:1 0 28%; text-align:center; padding:7px 0; font-size:9.5px; font-weight:800; letter-spacing:.6px; border:1px solid #34343c; border-radius:8px; color:#bbb; background:rgba(20,20,24,.8); }
+  .chip.on { border-color:#ff2d3d; color:#ff5a67; box-shadow:0 0 8px rgba(255,45,61,.45); }
+
+  /* POWER BUTTON: bevelled steel bezel, dark dome, drawn power symbol (SVG), red LED ring when on */
+  .pb { position:relative; width:40px; height:40px; border-radius:50%; padding:3px; flex:none;
+        background: conic-gradient(from 30deg, #d4d4da, #6a6a72, #ececf0, #55555d, #d4d4da);
+        box-shadow: 0 3px 5px rgba(0,0,0,.85), inset 0 1px 1px rgba(255,255,255,.7); }
+  .pb .in { width:100%; height:100%; border-radius:50%; display:flex; align-items:center; justify-content:center; color:#70707a;
+        background: radial-gradient(circle at 40% 28%, #3a3a42, #0e0e11 78%); box-shadow: inset 0 3px 5px #000, inset 0 -1px 1px rgba(255,255,255,.12); }
+  .pb svg { width:19px; height:19px; }
+  .pb.on { box-shadow: 0 0 0 2.5px #ff2d3d, 0 0 14px 3px rgba(255,45,61,.8), 0 3px 5px rgba(0,0,0,.85); }
+  .pb.on .in { color:#ff5563; background: radial-gradient(circle at 40% 28%, #44242a, #12090b 78%); }
+  .pb.on svg { filter: drop-shadow(0 0 4px #ff2d3d) drop-shadow(0 0 8px rgba(255,45,61,.8)); }
+  .state { font-size:9px; letter-spacing:1.2px; color:#70707a; margin-right:8px; align-self:center; }
+  .on-s { color:#ff5a67; }
+  .rt { display:flex; align-items:center; }
+</style>
+
+<h2>Delay / Reverb aç-kapa düğmesi</h2>
+<p class="subtitle">Simge artık yazı tipinden değil, çizilmiş vektör: her telefonda aynı görünür. Düğme pedallarla aynı dil: pahlı çelik çerçeve, koyu çukur, açıkken kırmızı LED halka. Kalan her şey aynı.</p>
+
+<div class="row">
+  <div>
+    <div class="stage brushed">
+      <div class="panel">
+        <div class="ph"><b>DELAY</b><div class="rt"><div class="pb on"><div class="in"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M12 3.2v8.6"/><path d="M6.6 6.9a8.2 8.2 0 1 0 10.8 0"/></svg></div></div></div></div>
+        <div class="body-wrap"><div class="knobs">
+          <div><div class="k" style="--v:100"><div class="glow"></div><div class="arc"></div><div class="body"></div><div class="tick"></div></div><div class="kl">ANA</div></div>
+          <div><div class="k" style="--v:150"><div class="glow"></div><div class="arc"></div><div class="body"></div><div class="tick"></div></div><div class="kl">SEVİYE</div></div>
+          <div><div class="k" style="--v:80"><div class="glow"></div><div class="arc"></div><div class="body"></div><div class="tick"></div></div><div class="kl">FEEDBACK</div></div>
+          <div><div class="k" style="--v:200"><div class="glow"></div><div class="arc"></div><div class="body"></div><div class="tick"></div></div><div class="kl">SÜRE</div></div>
+        </div></div>
+      </div>
+      <div class="panel" style="margin-bottom:0">
+        <div class="ph"><b>REVERB</b><div class="rt"><div class="pb on"><div class="in"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M12 3.2v8.6"/><path d="M6.6 6.9a8.2 8.2 0 1 0 10.8 0"/></svg></div></div></div></div>
+        <div class="body-wrap">
+          <div class="chips"><div class="chip on">PLATE</div><div class="chip">ROOM</div><div class="chip">SPRING</div></div>
+          <div class="knobs">
+            <div><div class="k" style="--v:90"><div class="glow"></div><div class="arc"></div><div class="body"></div><div class="tick"></div></div><div class="kl">ANA</div></div>
+            <div><div class="k" style="--v:130"><div class="glow"></div><div class="arc"></div><div class="body"></div><div class="tick"></div></div><div class="kl">SEVİYE</div></div>
+            <div><div class="k" style="--v:110"><div class="glow"></div><div class="arc"></div><div class="body"></div><div class="tick"></div></div><div class="kl">TON</div></div>
+            <div><div class="k" style="--v:170"><div class="glow"></div><div class="arc"></div><div class="body"></div><div class="tick"></div></div><div class="kl">SÜRE</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="cap"><b>İkisi de açık.</b> Düğme kırmızı LED halkalı, simge parlıyor.</div>
+  </div>
+
+  <div>
+    <div class="stage brushed">
+      <div class="panel off">
+        <div class="ph"><b>DELAY</b><div class="rt"><div class="pb"><div class="in"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M12 3.2v8.6"/><path d="M6.6 6.9a8.2 8.2 0 1 0 10.8 0"/></svg></div></div></div></div>
+        <div class="body-wrap"><div class="knobs">
+          <div><div class="k" style="--v:100"><div class="glow"></div><div class="arc"></div><div class="body"></div><div class="tick"></div></div><div class="kl">ANA</div></div>
+          <div><div class="k" style="--v:150"><div class="glow"></div><div class="arc"></div><div class="body"></div><div class="tick"></div></div><div class="kl">SEVİYE</div></div>
+          <div><div class="k" style="--v:80"><div class="glow"></div><div class="arc"></div><div class="body"></div><div class="tick"></div></div><div class="kl">FEEDBACK</div></div>
+          <div><div class="k" style="--v:200"><div class="glow"></div><div class="arc"></div><div class="body"></div><div class="tick"></div></div><div class="kl">SÜRE</div></div>
+        </div></div>
+      </div>
+      <div class="panel" style="margin-bottom:0">
+        <div class="ph"><b>REVERB</b><div class="rt"><div class="pb on"><div class="in"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M12 3.2v8.6"/><path d="M6.6 6.9a8.2 8.2 0 1 0 10.8 0"/></svg></div></div></div></div>
+        <div class="body-wrap">
+          <div class="chips"><div class="chip on">PLATE</div><div class="chip">ROOM</div><div class="chip">SPRING</div></div>
+          <div class="knobs">
+            <div><div class="k" style="--v:90"><div class="glow"></div><div class="arc"></div><div class="body"></div><div class="tick"></div></div><div class="kl">ANA</div></div>
+            <div><div class="k" style="--v:130"><div class="glow"></div><div class="arc"></div><div class="body"></div><div class="tick"></div></div><div class="kl">SEVİYE</div></div>
+            <div><div class="k" style="--v:110"><div class="glow"></div><div class="arc"></div><div class="body"></div><div class="tick"></div></div><div class="kl">TON</div></div>
+            <div><div class="k" style="--v:170"><div class="glow"></div><div class="arc"></div><div class="body"></div><div class="tick"></div></div><div class="kl">SÜRE</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="cap"><b>Delay kapalı.</b> Düğme sönük çelik, simge gri. Paneldeki potlar soluyor, böylece kapalı olduğu bir bakışta anlaşılıyor. Yine de dokunup ayarlayabilirsin.</div>
+  </div>
+</div>
